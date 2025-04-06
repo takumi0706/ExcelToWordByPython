@@ -69,31 +69,70 @@ def load_excel_data(file_path, sheet_name):
         print("エラー: データの読み込み中に問題が発生しました")
         return None
 
+def clean_name(name, birthday):
+    """名前から生年月日の文字列を削除します。"""
+    if birthday is None:
+        return name
+
+    # 生年月日の文字列表現を取得
+    birthday_str = str(birthday).split()[0]  # 時間部分を除去
+
+    # 名前から生年月日を削除
+    cleaned_name = name.replace(birthday_str, "")
+
+    return cleaned_name
+
 def extract_unique_data(df):
     """データフレームから氏名、住所、生年月日のユニークな値を抽出します。"""
     try:
-        names = df['氏名'].unique()
-        addresses = df['住所'].unique()
-        birthdays = df['生年月日'].unique()
+        # データフレームのコピーを作成
+        df_copy = df.copy()
+
+        # 各行に対して名前をクリーニング
+        for i, row in df_copy.iterrows():
+            name = row['氏名']
+            birthday = row['生年月日']
+            cleaned_name = clean_name(name, birthday)
+            df_copy.at[i, '氏名'] = cleaned_name
+
+        names = df_copy['氏名'].values
+        addresses = df_copy['住所'].values
+        birthdays = df_copy['生年月日'].values
+
         return names, addresses, birthdays
     except Exception as e:
         print("エラー: データの抽出中に問題が発生しました")
         return [], [], []
 
-def parse_date(date_string):
-    """日付文字列をパースして年、月、日に分解します。"""
+def parse_date(date_value):
+    """日付値をパースして年、月、日に分解します。"""
     try:
-        date = datetime.strptime(str(date_string), '%Y-%m-%d %H:%M:%S')
-        return date.year, date.month, date.day
-    except ValueError:
-        try:
-            date = datetime.strptime(str(date_string), '%Y-%m-%d')
+        # numpy.datetime64 または pandas.Timestamp オブジェクトの場合
+        if hasattr(date_value, 'year') and hasattr(date_value, 'month') and hasattr(date_value, 'day'):
+            return date_value.year, date_value.month, date_value.day
+
+        # 文字列の場合
+        date_str = str(date_value)
+
+        # 'T'を含む ISO 形式の場合 (例: '1990-01-01T00:00:00.000000000')
+        if 'T' in date_str:
+            date_str = date_str.split('T')[0]
+            date = datetime.strptime(date_str, '%Y-%m-%d')
             return date.year, date.month, date.day
-        except Exception:
-            print("エラー: 日付のパースに失敗しました")
-            return None, None, None
+
+        # スペースを含む形式の場合 (例: '1990-01-01 00:00:00')
+        elif ' ' in date_str:
+            date_str = date_str.split(' ')[0]
+            date = datetime.strptime(date_str, '%Y-%m-%d')
+            return date.year, date.month, date.day
+
+        # 日付のみの形式の場合 (例: '1990-01-01')
+        else:
+            date = datetime.strptime(date_str, '%Y-%m-%d')
+            return date.year, date.month, date.day
+
     except Exception:
-        print("エラー: 日付の処理中に問題が発生しました")
+        print("エラー: 日付のパースに失敗しました")
         return None, None, None
 
 def set_cell_borders_black(cell):
@@ -196,9 +235,8 @@ def create_word_document(name, address, birthday, index, governor_name):
                     for run in paragraph.runs:
                         run.font.size = Pt(10)
 
-        remarks = '''備考\n
-        1　該当する□の中にレ点を付けてください。
-　　　   2　70歳以上、18歳未満及び障害者等の方は、この申請書を、利用するゴルフ場が最初の
+        remarks = '''備考 1　該当する□の中にレ点を付けてください。
+　　　2　70歳以上、18歳未満及び障害者等の方は、この申請書を、利用するゴルフ場が最初の
 　　　利用である場合にゴルフ場に提出してください。また、受付の際に非課税利用に該当する
 　　　ことを証明する証明書をゴルフ場に提示してください。
 　　　3　教育活動等、国民スポーツ大会、スポーツマスターズ等の利用の場合は、利用の都度

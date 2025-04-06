@@ -16,11 +16,64 @@
 - openpyxl: Excelファイル操作用
 - python-docx: Wordドキュメント操作用
 - datetime: 日付処理用
-- python-dotenv: 環境変数の管理用（オプション）
+- python-dotenv: 環境変数の管理用
 
 ## インストール方法
 
-1. 必要なライブラリをインストールします：
+1. Pythonをインストールします：
+
+### Windows
+
+1. [Python公式サイト](https://www.python.org/downloads/windows/)からPythonインストーラーをダウンロードします。
+2. ダウンロードしたインストーラーを実行します。
+3. インストール時に「Add Python to PATH」オプションにチェックを入れてください。
+4. インストールが完了したら、コマンドプロンプトで以下のコマンドを実行してPythonが正しくインストールされたか確認します：
+   ```bash
+   python --version
+   ```
+
+### macOS
+
+1. Homebrewがインストールされている場合：
+   ```bash
+   brew install python
+   ```
+
+2. Homebrewがインストールされていない場合：
+   - [Python公式サイト](https://www.python.org/downloads/macos/)からPythonインストーラーをダウンロードします。
+   - ダウンロードしたインストーラーを実行します。
+   - インストールが完了したら、ターミナルで以下のコマンドを実行してPythonが正しくインストールされたか確認します：
+     ```bash
+     python3 --version
+     ```
+
+### Linux
+
+多くのLinuxディストリビューションにはPythonが既にインストールされています。確認するには：
+
+```bash
+python3 --version
+```
+
+インストールされていない場合：
+
+- Ubuntu/Debian:
+  ```bash
+  sudo apt update
+  sudo apt install python3 python3-pip
+  ```
+
+- Fedora:
+  ```bash
+  sudo dnf install python3 python3-pip
+  ```
+
+- CentOS/RHEL:
+  ```bash
+  sudo yum install python3 python3-pip
+  ```
+
+2. 必要なライブラリをインストールします：
 
 ```bash
 pip install pandas openpyxl python-docx python-dotenv
