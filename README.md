@@ -1,222 +1,186 @@
-# Excel_To_Word-by-Python
-This program retrieves information from an Excel file and outputs it to a Word file with the information appended to it. I have commented it out in the code and hope it is helpful.
----
-Excelファイルからデータを読み込み、特定の形式のWordドキュメントを生成するプロセスを行います。以下は、各セルのコードについての詳細な説明です。
+# Excel to Word 変換ツール
 
-### 1. 必要なパッケージのインストール
+このプロジェクトは、Excelファイルからデータを読み込み、各人の情報をもとにWordドキュメントを生成するツールです。具体的には、ゴルフ場利用税の非課税申請書を自動生成します。
 
-```python
-!pip install openpyxl
-!pip install pandas
+## 機能
+
+- Excelファイルから氏名、住所、生年月日のデータを読み込む
+- 各人ごとにWordドキュメントを生成する
+- 生成したドキュメントに適切なフォーマットを適用する
+
+## 必要なライブラリ
+
+このツールを使用するには、以下のライブラリが必要です：
+
+- pandas: データ処理用
+- openpyxl: Excelファイル操作用
+- python-docx: Wordドキュメント操作用
+- datetime: 日付処理用
+- python-dotenv: 環境変数の管理用（オプション）
+
+## インストール方法
+
+1. 必要なライブラリをインストールします：
+
+```bash
+pip install pandas openpyxl python-docx python-dotenv
 ```
-- `openpyxl`: Excelファイルを読み書きするためのライブラリ。
-- `pandas`: データフレーム操作のためのライブラリ。
 
-### 2. パッケージのインポート
+## 使い方
 
-```python
-import openpyxl
-import pandas as pd
-import glob
+### 1. 環境変数の設定
+
+すべての設定は環境変数から取得されます。以下の2つの方法で環境変数を設定できます：
+
+#### 1.1 .envファイルを使用する方法（推奨）
+
+プロジェクトのルートディレクトリに`.env`ファイルを作成し、以下のように設定を記述します：
+
 ```
-- `openpyxl`と`pandas`をインポートして、Excelファイル操作とデータフレーム操作を行います。
-- `glob`はファイルパスのパターンマッチングを行うためのモジュールです。
-
-### 3. ファイルパスとシート名の設定
-
-```python
-import_file_path = 'your_file_location'
-excel_sheet_name = '全部員'
-export_file_path = 'your_file_location'
+# 設定セクション
+INPUT_FILE_PATH=input.xlsx
+OUTPUT_DIRECTORY=output
+SHEET_NAME=全部員
+GOVERNOR_NAME=知事名
+GOLF_COURSE_NAME=石川カントリークラブ
+USAGE_DATE=2023年10月15日
 ```
-- ここではExcelファイルのパスとシート名を設定しています。
 
-### 4. Excelファイルの読み込み
+この方法を使用するには、python-dotenvライブラリが必要です：
 
-```python
-df_order = pd.read_excel(import_file_path, sheet_name = excel_sheet_name)
+```bash
+pip install python-dotenv
 ```
-- 指定されたExcelファイルのシートをデータフレームに読み込みます。
 
-### 5. データフレームの表示
+#### 1.2 直接環境変数を設定する方法
 
-```python
-df_order
+環境変数を直接設定することもできます：
+
+##### Linuxまたは macOS:
+
+```bash
+export INPUT_FILE_PATH="input.xlsx"
+export OUTPUT_DIRECTORY="output"
+export SHEET_NAME="全部員"
+export GOVERNOR_NAME="知事名"
+export GOLF_COURSE_NAME="石川カントリークラブ"
+export USAGE_DATE="2023年10月15日"
+python excel_to_word.py
 ```
-- データフレームの内容を表示します。
 
-### 6. ユニークな値の抽出
+##### Windows (コマンドプロンプト):
 
-```python
-people_name = df_order['氏名'].unique()
-people_location = df_order['住所'].unique()
-people_birthday = df_order['生年月日'].unique()
+```cmd
+set INPUT_FILE_PATH=input.xlsx
+set OUTPUT_DIRECTORY=output
+set SHEET_NAME=全部員
+set GOVERNOR_NAME=知事名
+set GOLF_COURSE_NAME=石川カントリークラブ
+set USAGE_DATE=2023年10月15日
+python excel_to_word.py
 ```
-- データフレームから「氏名」、「住所」、「生年月日」のユニークな値を抽出します。
 
-### 7. ユニークな値の表示
+##### Windows (PowerShell):
 
-```python
-people_name
-people_location
-people_birthday
+```powershell
+$env:INPUT_FILE_PATH = "input.xlsx"
+$env:OUTPUT_DIRECTORY = "output"
+$env:SHEET_NAME = "全部員"
+$env:GOVERNOR_NAME = "知事名"
+$env:GOLF_COURSE_NAME = "石川カントリークラブ"
+$env:USAGE_DATE = "2023年10月15日"
+python excel_to_word.py
 ```
-- 抽出したユニークな値を表示します。
 
-### 8. 各値の出力
+### 2. 環境変数の説明
 
-```python
-for person_name in people_name:
-    print(person_name)
-for person_location in people_location:
-    print(person_location)
-for person_birthday in people_birthday:
-    print(person_birthday)
+| 環境変数 | 説明 | デフォルト値 |
+|----------|------|------------|
+| `INPUT_FILE_PATH` | 入力Excelファイルのパス | `input.xlsx` |
+| `OUTPUT_DIRECTORY` | 出力ディレクトリ | `output` |
+| `SHEET_NAME` | データが含まれるシート名 | `全部員` |
+| `GOVERNOR_NAME` | 知事の名前 | `知事名` |
+| `GOLF_COURSE_NAME` | ゴルフ場名 | `""` (空文字) |
+| `USAGE_DATE` | 利用年月日 | `年　　　月　　　日` |
+
+環境変数を設定しない場合、上記のデフォルト値が使用されます。
+
+### 3. Excelファイルの準備
+
+入力Excelファイルには、少なくとも以下の列が必要です：
+
+| 列名 | データ型 | 説明 | 形式 | 例 |
+|------|----------|------|------|------|
+| `氏名` | 文字列 | 申請者の氏名 | フルネーム | 山田太郎 |
+| `住所` | 文字列 | 申請者の住所 | 都道府県から番地まで | 東京都千代田区霞が関1-1-1 |
+| `生年月日` | 日付 | 申請者の生年月日 | YYYY-MM-DD形式 | 1990-01-01 |
+
+以下は入力Excelファイルの例です：
+
+| 氏名 | 住所 | 生年月日 |
+|------|------|----------|
+| 山田太郎 | 東京都千代田区霞が関1-1-1 | 1990-01-01 |
+| 佐藤花子 | 大阪府大阪市中央区大手前2-2-2 | 1985-05-15 |
+| 鈴木一郎 | 愛知県名古屋市中区三の丸3-3-3 | 1978-12-30 |
+
+### 4. スクリプトの実行
+
+```bash
+python excel_to_word.py
 ```
-- 各ユニークな値を順に出力します。
 
-### 9. 日付のパースと分解
+### 5. 結果の確認
 
-```python
-from datetime import datetime
-for person_birthday in people_birthday:
-    date_string = str(person_birthday)
-    dates = [datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')]
-    years = [date.year for date in dates]
-    months = [date.month for date in dates]
-    days = [date.day for date in dates]
-    print("Years:", years)
-    print("Months:", months)
-    print("Days:", days)
-```
-- 生年月日をパースして年、月、日に分解し、表示します。
+スクリプトが正常に実行されると、指定した出力ディレクトリに各人のWordドキュメントが生成されます。ファイル名は「連番_氏名.docx」の形式になります。
 
-### 10. `python-docx`のインストール
+## コードの説明
 
-```python
-pip install python-docx
-```
-- `python-docx`: Wordドキュメントを操作するためのライブラリ。
+### 主な機能
 
-### 11. `Document`のインポート
+1. **環境のセットアップ**：出力ディレクトリが存在しない場合は作成します。
+2. **Excelデータの読み込み**：指定されたExcelファイルからデータを読み込みます。
+3. **ユニークなデータの抽出**：氏名、住所、生年月日のユニークな値を抽出します。
+4. **Wordドキュメントの作成**：各人の情報をもとにWordドキュメントを生成します。
+5. **フォント設定の適用**：生成したドキュメントに適切なフォント設定を適用します。
 
-```python
-from docx import Document
-```
-- `Document`クラスをインポートしてWordドキュメントを操作します。
+### 関数の説明
 
-### 12. セルの枠線を設定する関数
+- `setup_environment()`: 出力ディレクトリが存在しない場合は作成します。
+- `load_excel_data(file_path, sheet_name)`: Excelファイルからデータを読み込みます。
+- `extract_unique_data(df)`: データフレームから氏名、住所、生年月日のユニークな値を抽出します。
+- `parse_date(date_string)`: 日付文字列をパースして年、月、日に分解します。
+- `set_cell_borders_black(cell)`: セルの枠線を黒色に設定します。
+- `apply_font_settings(file_path)`: ドキュメントのフォント設定を適用します。
+- `create_word_document(name, address, birthday, index, governor_name)`: Wordドキュメントを作成します。
+- `main()`: メイン処理を実行します。
 
-```python
-from docx.oxml import OxmlElement
-from docx.shared import RGBColor
-from docx.oxml.ns import qn
+## 改良点
 
-def set_cell_borders_black(cell):
-    tcPr = cell._element.get_or_add_tcPr()
-    top = OxmlElement('w:top')
-    top.set(qn('w:val'), 'single')
-    top.set(qn('w:sz'), '4')
-    top.set(qn('w:color'), '000000')
-    tcPr.append(top)
-    left = OxmlElement('w:left')
-    left.set(qn('w:val'), 'single')
-    left.set(qn('w:sz'), '4')
-    left.set(qn('w:color'), '000000')
-    tcPr.append(left)
-    bottom = OxmlElement('w:bottom')
-    bottom.set(qn('w:val'), 'single')
-    bottom.set(qn('w:sz'), '4')
-    bottom.set(qn('w:color'), '000000')
-    tcPr.append(bottom)
-    right = OxmlElement('w:right')
-    right.set(qn('w:val'), 'single')
-    right.set(qn('w:sz'), '4')
-    right.set(qn('w:color'), '000000')
-    tcPr.append(right)
-```
-- セルの枠線を黒色に設定する関数を定義します。
+元のJupyterノートブックから以下の改良を行いました：
 
-### 13. Wordドキュメントの生成と保存
+1. **コードの構造化**：機能ごとに関数に分割し、メイン処理を`main()`関数にまとめました。
+2. **エラー処理の追加**：各関数にtry-except文を追加し、エラーが発生した場合も適切に処理できるようにしました。
+3. **ハードコードされた値の削除**：設定値を変数として定義し、簡単に変更できるようにしました。
+4. **ドキュメントの追加**：各関数に日本語のドキュメントを追加し、コードの理解を助けるようにしました。
+5. **ファイル名の改善**：出力ファイル名に連番を追加し、整理しやすくしました。
 
-```python
-from docx.shared import Pt, Inches
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+## 注意事項
 
-for i in range(len(people_birthday)):
-    doc = Document()
-    chiji_name = "name"
-    doc.add_paragraph('第38号の5様式\n\n')
-    doc.add_paragraph('comment\n').alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    doc.add_paragraph('　　石川県知事　'+chiji_name+'様\n')
-    doc.add_paragraph('coment')
-    table = doc.add_table(rows=9, cols=2)
-    for row in table.rows:
-        for cell in row.cells:
-            set_cell_borders_black(cell)
-    for row in table.rows:
-        row.cells[0].width = Inches(1.4)
-        row.cells[1].width = Inches(4.3)
-    date_string = str(people_birthday[i])
-    date = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
-    years = date.year
-    months = date.month
-    days = date.day
-    rows_contents = [
-        ('利用ゴルフ場名', ''),
-        ('利用年月日', '年　　　月　　　日'),
-        ('住所', people_location[i]),
-        ('区分', '□　メンバー　　□　ビジター'),
-        ('氏名', people_name[i]),
-        ('生年月日', '大・昭・平'+str(years-1988)+'年'+str(months)+'月'+str(days)+'日生'),
-        ('非課税等適用区分', '□70歳以上　□18歳未満　□障害者等\n□教育活動等　□国民スポーツ大会　□スポーツマスターズ等'),
-        ('証明書の種類', '□運転免許証　□学生証　□職員証　□パスポート\n□障害者手帳等　□学校長の証明　□教育委員会の証明\n□その他(　　　　　　　　)'),
-        ('備考','')
-    ]
-    for row, (label, content) in zip(table.rows, rows_contents):
-        row.cells[0].text = label
-        row.cells[1].text = content
-        for cell in row.cells:
-            paragraphs = cell.paragraphs
-            for paragraph in paragraphs:
-                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-                for run in paragraph.runs:
-                    run.font.size = Pt(10)
-    remarks = '''備考　1　該当する□の中にレ点を付けてください。
-      2　70歳以上、18歳未満及び障害者等の方は、この申請書を、利用するゴルフ場が最初の
-      利用である場合にゴルフ場に提出してください。また、受付の際に非課税利用に該当する
-      ことを証明する証明書をゴルフ場に提示してください。
-      3　教育活動等、国民スポーツ大会、スポーツマスターズ等の利用の場合は、利用の都度
-      この申請書を提出してください。その際には、受付に非課税・課税免除利用に該当するこ
-      とを証明する証明書をゴルフ場に提出してください。
-      4　この申請書を提出しない場合、2又は3の証明書を提示又は提出しない場合は、非課
-      税・課税免除の適用を受けられない場合があります。
-'''
-    doc.add_paragraph(remarks).alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-    file_path = 'your_file_location'
-    doc.save(file_path)
-    file_path
-```
-- 各人の情報をもとにWordドキュメントを生成し、指定されたファイルパスに保存します。
+- 入力Excelファイルには、必要な列（氏名、住所、生年月日）が含まれている必要があります。
+- 生年月日は、YYYY-MM-DD形式である必要があります。
+- 出力ディレクトリが存在しない場合は自動的に作成されます。
+- 同名のファイルが既に存在する場合は上書きされます。
 
-### 14. フォントとサイズを設定
+## トラブルシューティング
 
-```python
-from docx import Document
-from docx.shared import Pt
+### エラー：「必要なカラムがExcelファイルに見つかりません」
 
-for i in range(len(people_birthday)):
-    doc = Document('your_file_location')
-    for paragraph in doc.paragraphs:
-        for run in paragraph.runs:
-            run.font.size = Pt(10)
-            run.font.name = 'ＭＳ 明朝'
+入力Excelファイルに必要な列（氏名、住所、生年月日）が含まれていることを確認してください。
 
+### エラー：「日付のパースに失敗しました」
 
-    doc.save('your_file_location')
-```
-- 保存されたWordドキュメントを開き、フォントとサイズを設定して再度保存します。
+生年月日の形式が正しいことを確認してください。サポートされている形式は「YYYY-MM-DD」または「YYYY-MM-DD HH:MM:SS」です。
 
----
+### エラー：「ドキュメントの作成中に問題が発生しました」
 
-このコードは、指定されたExcelファイルからデータを読み込み、各人の情報をもとにWordドキュメントを生成して保存します。Wordドキュメントのフォントとサイズを設定するプロセスも含まれています。
+出力ディレクトリに書き込み権限があることを確認してください。また、同名のファイルが開かれていないことを確認してください。
